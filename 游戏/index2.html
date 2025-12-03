@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>庄惠辩鱼 - 文字游戏</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000000',
+            secondary: '#ffffff',
+            accent: '#a8071a',
+            'ink-light': '#4a4a4a',
+          },
+          fontFamily: {
+            'brush': ['Ma Shan Zheng', 'cursive'],
+            'serif': ['Noto Serif SC', 'serif'],
+          },
+          animation: {
+            'victory': 'victoryAppear 2s ease-out forwards',
+            'fade-in': 'fadeIn 1s ease-out forwards',
+            'scale-in': 'scaleIn 0.5s.ease-out forwards',
+            'float': 'float 3s ease-in-out infinite',
+            'spin': 'spin 2s linear infinite',
+            'pulse-scale': 'pulse-scale 2s.ease-in-out infinite',
+          },
+          keyframes: {
+            victoryAppear: {
+              '0%': { transform: 'scale(0.5) rotate(-10deg)', opacity: 0, filter: 'blur(10px)' },
+              '70%': { transform: 'scale(1.1) rotate(5deg)', opacity: 1, filter: 'blur(0)' },
+              '100%': { transform: 'scale(1) rotate(0)', opacity: 1, filter: 'blur(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: 0 },
+              '100%': { opacity: 1 },
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.8)', opacity: 0 },
+              '100%': { transform: 'scale(1)', opacity: 1 },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            spin: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' },
+            },
+            'pulse-scale': {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.1)' },
+            },
+          },
+          backdropBlur: {
+            xs: '2px',
+          },
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow { text-shadow: 2px 2px 4px rgba(0,0,0,.3);}
+      .text-shadow-lg { text-shadow: 3px 3px 6px rgba(0,0,0,.5);}
+      .ink-border {
+        border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><path d="M0 0h4v4H0z" fill="none" stroke="%23000" stroke-width="1" stroke-dasharray="1,1"/></svg>') 1 repeat;
+      }
+      .glass-effect {
+        background: rgba(255,255,255,.2);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.3);
+      }
+      .ink-wash-bg {
+        background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/4ed98d9ca0cf4182b165816203fef8a1~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914306&x-signature=pOgK5B9NRJV%2Be99wlbEhz5Jpi2M%3D');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .character-portrait { transition: all .3s ease;}
+      .character-portrait:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04);
+      }
+      .debate-option {
+        transition: all .3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .debate-option::before {
+        content:'';
+        position:absolute;
+        top:0;left:-100%;
+        width:100%;height:100%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+        transition:all .6s ease;
+      }
+      .debate-option:hover::before { left:100%;}
+      .debate-option:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+      }
+      .debate-option.correct {
+        border-color:#10b981;
+        box-shadow:0 0 15px rgba(16,185,129,.5);
+      }
+      .debate-option.incorrect {
+        border-color:#ef4444;
+        box-shadow:0 0 15px rgba(239,68,68,.5);
+      }
+      .seal {
+        font-family:'Ma Shan Zheng',cursive;
+        color:#a8071a;
+        transform:rotate(15deg);
+        text-shadow:1px 1px 2px rgba(0,0,0,.2);
+      }
+      .fish {position:absolute;width:120px;height:60px;background-size:contain;background-repeat:no-repeat;background-position:center;background-color:transparent;animation:swim 15s infinite linear;}
+      .fish-img {width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,0,0,.2)) opacity(.9);mix-blend-mode:multiply;}
+      @keyframes swim {
+        0%{transform:translateX(100vw) translateY(50%) rotate(0) scaleX(1);}
+        100%{transform:translateX(-100%) translateY(50%) rotate(0) scaleX(1);}
+      }
+      @keyframes swim-up {
+        0%{transform:translateX(100vw) translateY(70%) rotate(0) scaleX(1);}
+        100%{transform:translateX(-100%) translateY(30%) rotate(0) scaleX(1);}
+      }
+      @keyframes swim-down {
+        0%{transform:translateX(100vw) translateY(30%) rotate(0) scaleX(1);}
+        100%{transform:translateX(-100%) translateY(70%) rotate(0) scaleX(1);}
+      }
+      @keyframes swim-slow {
+        0%{transform:translateX(100vw) translateY(50%) rotate(0) scaleX(1);}
+        100%{transform:translateX(-100%) translateY(50%) rotate(0) scaleX(1);}
+      }
+      .fish:nth-child(2){top:30%;animation-delay:5s;animation-duration:20s;}
+      .fish:nth-child(3){top:70%;animation-delay:2s;animation-duration:18s;}
+      .fish:nth-child(4){top:40%;animation-name:swim-up;animation-delay:1s;animation-duration:25s;}
+      .fish:nth-child(5){top:60%;animation-name:swim-down;animation-delay:7s;animation-duration:22s;}
+      .fish:nth-child(6){top:20%;animation-delay:4s;animation-duration:16s;}
+      .fish:nth-child(7){top:80%;animation-name:swim-slow;animation-delay:9s;animation-duration:30s;}
+      .fish:nth-child(8){top:50%;animation-delay:3s;animation-duration:19s;}
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-serif.min-h-screen">
+  <!-- 背景层 -->
+  <div class="fixed inset-0 ink-wash-bg opacity-30 z-0"></div>
+  
+  <!-- 主容器 -->
+  <div class="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 标题区 -->
+    <header class="text-center mb-8.animate-fade-in">
+      <div class="relative inline-block">
+        <h1 class="text-6xl md:text-8xl font-brush text-primary mb-2">知鱼槛·濠梁遗韵</h1>
+        <div class="absolute -top-6 -right-12 seal text-2xl md:text-3xl">庄惠辩鱼</div>
+      </div>
+      <p class="text-lg md:text-xl text-ink-light mt-4 max-w-2xl mx-auto">临槛观鱼，溯源濠梁之辩；探园访古，体悟江南文脉</p>
+      <div class="mt-6 glass-effect rounded-lg p-4 max-w-3xl mx-auto">
+        <h3 class="text-2xl font-brush text-center mb-2">知鱼槛</h3>
+        <p class="text-ink-light">
+          知鱼槛是无锡寄畅园核心景点之一，始建于明代万历年间，由园主秦耀命名，取自《庄子·秋水》中「濠梁之辩」。
+          其名寓意「临槛观鱼，体悟自然之乐」，是江南古典园林中「哲学思想与造园艺术」完美融合的典范。
+          槛前为锦汇漪，池水与惠山泉相通，清澈见底；建筑四面开敞，采用「吴王靠」栏杆，可坐可凭，尽览「鱼游水中、鹤舞滩头」的绝佳景致。
+          乾隆六次南巡，四次到访此处并题诗，使知鱼槛成为承载江南文脉的重要地标。
+        </p>
+      </div>
+      <!-- 知识图鉴入口 -->
+      <div class="mt-8 text-center">
+        <button id="knowledge-btn" class="bg-white border-2 border-black px-6 py-3 rounded-lg inline-flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-md">
+          <i class="fa fa-book text-xl"></i>
+          <span class="text-xl font-brush">知鱼槛知识图鉴</span>
+          <span id="unlocked-count" class="bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">1/6</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 右上角全局背景音乐控制按钮（新增） -->
+    <button
+      id="global-music-toggle"
+      class="fixed top-4 right-4 z-40 w-10 h-10 rounded-full flex items-center justify-center border-2 border-gray-400 bg-white shadow-lg cursor-pointer transition-colors"
+      title="切换背景音乐">
+      <i class="fa fa-music text-gray-400 text-xl"></i>
+    </button>
+
+    <!-- 知识图鉴界面 -->
+    <div id="knowledge-trivia" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+      <div id="knowledge-backdrop" class="absolute inset-0 bg-black opacity-70 backdrop-blur-sm"></div>
+      <div class="relative bg-white rounded-lg p-6 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-scale-in border-4 border-black shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-4xl font-brush">知鱼槛知识图鉴</h2>
+          <button id="close-knowledge" class="bg-black text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        
+        <p class="text-lg mb-2 text-ink-light">探索知鱼槛的历史文化与建筑特色，完成辩论与对诗挑战以解锁更多知识。</p>
+        <p class="text-sm mb-4 text-gray-600 italic" id="knowledge-hint">
+          解锁条件：首次进入游戏自动解锁一条；辩论成功 1 次解锁 1 条；辩论全部成功再解锁 1 条；完成乾隆对诗可额外解锁 1 条。
+        </p>
+        <div id="knowledge-container" class="grid gap-4 md:grid-cols-2"></div>
+        
+        <div class="mt-8 text-center">
+          <p class="text-sm text-gray-500 italic">完成辩论挑战以解锁更多知鱼槛的秘密</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主游戏区 -->
+    <main class="relative">
+      <!-- 模式选择 -->
+      <section id="mode-selection" class="text-center mb-6">
+        <h2 class="text-2xl md:text-3xl font-brush mb-4">选择辩鱼模式</h2>
+        <div class="inline-flex rounded-lg border-2 border-black overflow-hidden">
+          <button
+            id="mode-classic"
+            class="px-4 py-2 bg-black text-white text-lg border-r-2 border-black">
+            庄惠辩鱼
+          </button>
+          <button
+            id="mode-ai"
+            class="px-4 py-2 bg-white text-black text-lg hover:bg-gray-100">
+            与庄惠辩鱼
+          </button>
+        </div>
+      </section>
+
+      <!-- 角色选择界面 -->
+      <section id="character-selection" class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 py-8 animate-fade-in">
+        <div class="character-card cursor-pointer" data-character="zhuangzi">
+          <div class="character-portrait rounded-lg overflow-hidden border-4 border-black shadow-lg w-48 h-48 md:w-64 md:h-64 mx-auto">
+            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/5deae3ddd0b247e9af014cd601625327~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=6Bzu8mmK8wh317lriB4wQEOfi50%3D" 
+                 alt="庄子" 
+                 class="w-full h-full object-cover">
+          </div>
+          <h2 class="text-3xl font-brush text-center mt-4">庄子</h2>
+          <p class="text-center text-gray-600 italic.mt-1">"天地与我并生，而万物与我为一"</p>
+          <p class="text-center text-ink-light mt-2">道家代表人物，主张自然无为</p>
+        </div>
+        
+        <div class="character-card cursor-pointer" data-character="huizi">
+          <div class="character-portrait rounded-lg overflow-hidden border-4 border-black shadow-lg w-48 h-48 md:w-64 md:h-64 mx-auto">
+            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/2e894167e5144eb08911e0ffeac5bc6d~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=F%2BwxErCn2TLL%2BirX7%2FrAY9u4%2BgY%3D" 
+                 alt="惠子" 
+                 class="w-full h-full object-fit">
+          </div>
+          <h2 class="text-3xl font-brush text-center mt-4">惠子</h2>
+          <p class="text-center text-gray-600 italic mt-1">"合同异，离坚白"</p>
+          <p class="text-center text-ink-light mt-2">名家代表人物，擅长逻辑辩论</p>
+        </div>
+      </section>
+      
+      <!-- 经典辩论界面 -->
+      <section id="debate-game" class="hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8">
+          <div class="flex flex-col items-center mb-6 md:mb-0">
+            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-black shadow-lg">
+              <img id="player-portrait" src="" alt="玩家角色" class="w-full h-full object-cover">
+            </div>
+            <h3 id="player-name" class="text-2xl font-brush mt-2"></h3>
+          </div>
+          
+          <div class="text-center">
+            <h2 class="text-4xl font-brush mb-2">濠梁之辩</h2>
+            <p class="text-lg text-ink-light">当前辩论: <span id="current-round">1</span>/5</p>
+          </div>
+          
+          <div class="flex flex-col items-center">
+            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-black shadow-lg">
+              <img id="opponent-portrait" src="" alt="对手角色" class="w-full h-full object-cover">
+            </div>
+            <h3 id="opponent-name" class="text-2xl font-brush mt-2"></h3>
+          </div>
+        </div>
+        
+        <div class="glass-effect rounded-lg p-6 mb-8 max-w-3xl mx-auto">
+          <div id="debate-content" class="text-xl md:text-2xl text-center mb-6 leading-relaxed"></div>
+          <div id="debate-options" class="flex flex-col gap-4"></div>
+        </div>
+        
+        <div class="flex justify-between items-center max-w-3xl mx-auto">
+          <div class="text-center">
+            <p class="text-lg text-ink-light">辩论成功</p>
+            <p id="current-score" class="text-3xl font-bold">0</p>
+          </div>
+          
+          <button id="restart-debate" class="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fa fa-refresh"></i>
+            <span>重新辩论</span>
+          </button>
+          
+          <div class="text-center">
+            <p class="text-lg text-ink-light">连续辩论成功次数</p>
+            <p id="best-score" class="text-3xl font-bold">0</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI 辩论界面 -->
+      <section id="ai-debate-game" class="hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8">
+          <div class="flex items-center gap-4">
+            <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-black bg-white flex items-center justify-center">
+              <img id="ai-opponent-avatar" src="" alt="AI 辩论对手头像" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <h2 class="text-2xl font-brush mb-1" id="ai-opponent-name">庄子</h2>
+              <p class="text-sm text-ink-light" id="ai-opponent-desc">逍遥游者，善以譬喻言理。</p>
+            </div>
+          </div>
+
+          <div class="mt-4 md:mt-0 text-right">
+            <p class="text-lg">当前轮次：<span id="ai-current-round">1</span>/5</p>
+          </div>
+        </div>
+
+        <div class="glass-effect rounded-lg p-6 mb-6 max-w-3xl mx-auto">
+          <div id="ai-dialogue-log" class="space-y-4 max-h-80 overflow-y-auto mb-4 text-lg.leading-relaxed">
+            <p class="text-ink-light">
+              请选择想要辩论的对象（庄子 / 惠子），并开始就“知鱼之乐”展开五轮辩论。
+            </p>
+          </div>
+
+          <div class="mt-4">
+            <label for="ai-player-input" class="block mb-2 font-semibold">你的辩词：</label>
+            <textarea
+              id="ai-player-input"
+              class="w-full border-2 border-black rounded-lg p-3 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-ink"
+              placeholder="从你的立场出发，与庄子或惠子就“知鱼之乐”展开辩论……"></textarea>
+
+            <div class="flex justify-between items-center mt-3">
+              <small class="text-gray-500">共进行 5 轮攻辩，AI 会在最后判定谁更占上风。</small>
+              <button
+                id="ai-send-btn"
+                class="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                提交本轮辩词
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 五轮结束后才显示：去乾隆对诗 -->
+        <div class="text-center mb-6 hidden" id="ai-to-poetry-wrapper">
+          <button
+            id="ai-to-poetry-btn"
+            class="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors text-lg">
+            游园赋诗
+          </button>
+        </div>
+      </section>
+      
+      <!-- 结果弹窗（经典模式） -->
+      <div id="result-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="absolute inset-0 bg-black opacity-50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-lg p-8 max-w-lg w-full mx-4 animate-victory border-4 border-black shadow-2xl">
+          <h2 id="result-title" class="text-4xl font-brush text-center mb-4"></h2>
+          <div id="result-content" class="text-xl text-center mb-6 leading-relaxed"></div>
+          <div class="text-center">
+            <p class="text-lg mb-2">本次得分: <span id="final-score" class="font-bold"></span></p>
+            <button id="play-again" class="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors text-lg">
+              游园赋诗
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 乾隆对诗界面 -->
+      <section id="qianlong-poetry" class="hidden">
+        <!-- 头像 + 标题：mb-8 改成 mb-6，让下面卡片整体上移一点 -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6">
+          <div class="flex flex-col items-center mb-6 md:mb-0">
+            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-black shadow-lg">
+              <img id="poetry-player-portrait" src="" alt="玩家角色" class="w-full h-full object-cover">
+            </div>
+            <h3 id="poetry-player-name" class="text-2xl font-brush mt-2"></h3>
+          </div>
+          
+          <div class="text-center">
+            <h2 class="text-4xl font-brush mb-2">乾隆对诗</h2>
+            <p class="text-lg text-ink-light">当前对诗: <span id="current-poetry-round">1</span>/4</p>
+          </div>
+          
+          <div class="flex flex-col items-center">
+            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-black shadow-lg">
+              <img id="poetry-opponent-portrait" src="" alt="乾隆" class="w-full h-full object-cover">
+            </div>
+            <h3 id="poetry-opponent-name" class="text-2xl font-brush mt-2"></h3>
+          </div>
+        </div>
+        
+        <!-- 对诗卡片：mb-8 改成 mb-4，文本 mb-6 改成 mb-3，整块更靠上、内容更靠中间 -->
+        <div class="glass-effect rounded-lg p-6 mb-4 max-w-3xl mx-auto">
+          <div id="poetry-content" class="text-xl md:text-2xl text-center mb-3 leading-relaxed"></div>
+          <div id="poetry-options" class="flex flex-col gap-4"></div>
+        </div>
+        
+        <div class="flex justify-between items-center max-w-3xl mx-auto">
+          <div class="text-center">
+            <p class="text-lg text-ink-light">对诗成功</p>
+            <p id="poetry-current-score" class="text-3xl font-bold">0</p>
+          </div>
+          
+          <button id="restart-poetry" class="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <i class="fa fa-refresh"></i>
+            <span>重新对诗</span>
+          </button>
+          
+          <div class="text-center">
+            <p class="text-lg text-ink-light">返回辩论</p>
+            <button id="back-to-debate" class="bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+              返回
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 诗词结果弹窗 -->
+      <div id="poetry-result-modal" class="fixed inset-0 flex items-center justify-center z-50.hidden">
+        <div class="absolute inset-0 bg-black opacity-50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-lg p-8 max-w-lg w-full mx-4 animate-victory border-4 border-black shadow-2xl">
+          <h2 id="poetry-result-title" class="text-4xl font-brush text-center mb-4"></h2>
+          <div id="poetry-result-content" class="text-xl text-center mb-6.leading-relaxed"></div>
+          <div class="text-center">
+            <p class="text-lg mb-2">对诗得分: <span id="poetry-final-score" class="font-bold"></span>/4</p>
+            <button id="play-again-poetry" class="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors text-lg">
+              再游知鱼槛
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- 移动端底部导航 -->
+    <div class="fixed.bottom-0 left-0 right-0 bg-white bg-opacity-90 border-t border-black py-3 px-4 md:hidden z-40">
+      <div class="flex justify-around">
+        <button id="mobile-restart" class="flex flex-col items-center">
+          <i class="fa fa-refresh text-xl"></i>
+          <span class="text-xs mt-1">重新辩论</span>
+        </button>
+        <button id="mobile-music-toggle" class="flex flex-col items-center">
+          <i class="fa fa-music text-xl"></i>
+          <span class="text-xs mt-1">音乐</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移动端人物选择弹窗 -->
+    <div id="mobile-character-modal" class="fixed inset-0 flex items-center justify-center z-50.hidden md:hidden">
+      <div class="absolute inset-0 bg-black opacity-50 backdrop-blur-sm"></div>
+      <div class="relative bg-white rounded-lg p-6 max-w-md w-full mx-4 border-4 border-black">
+        <h3 class="text-2xl font-brush text-center mb-4">选择人物</h3>
+        
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="character-option cursor-pointer" data-character="zhuangzi">
+            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-black">
+              <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/5deae3ddd0b247e9af014cd601625327~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=6Bzu8mmK8wh317lriB4wQEOfi50%3D" 
+                   alt="庄子" 
+                   class="w-full h-full object-cover">
+            </div>
+            <p class="text-center mt-2">庄子</p>
+          </div>
+          
+          <div class="character-option cursor-pointer" data-character="huizi">
+            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-black">
+              <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/2e894167e5144eb08911e0ffeac5bc6d~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=F%2BwxErCn2TLL%2BirX7%2FrAY9u4%2BgY%3D" 
+                   alt="惠子" 
+                   class="w-full h-full object-cover">
+            </div>
+            <p class="text-center mt-2">惠子</p>
+          </div>
+          
+          <div class="character-option cursor-pointer" data-character="qianlong">
+            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-black">
+              <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/788056deb9a340de9b62dba137af31bb~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914313&x-signature=9Am5V0Jfh9AyCPlff%2BgE6GR3R8Y%3D" 
+                   alt="乾隆" 
+                   class="w-full h-full object-cover">
+            </div>
+            <p class="text-center mt-2">乾隆</p>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <p class="text-sm text-ink-light mb-2">点此研墨作画，建议上传1:1比例图片</p>
+          <label class="block w-full bg-white bg-opacity-50 border border-black rounded px-3 py-2 text-center cursor-pointer hover:bg-gray-100 transition-colors">
+            <input type="file" id="mobile-portrait-upload" class="hidden" accept="image/*">
+            <i class="fa fa-upload mr-2"></i>上传画像
+          </label>
+        </div>
+        
+        <div class="flex gap-4">
+          <button id="mobile-reset-portrait" class="flex-1 bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+            复原描摹
+          </button>
+          <button id="mobile-close-modal" class="flex-1 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 知识图鉴数据
+    const knowledgeTrivia = [
+      { id:1, title:"知鱼槛的由来", content:"知鱼槛是无锡寄畅园核心景点之一，始建于明代万历年间，由园主秦耀命名，取自《庄子·秋水》中「濠梁之辩」。其名寓意「临槛观鱼，体悟自然之乐」，是江南古典园林中「哲学思想与造园艺术」完美融合的典范。", unlocked:true },
+      { id:2, title:"建筑特色", content:"知鱼槛建筑四面开敞，采用「吴王靠」栏杆，可坐可凭，尽览「鱼游水中、鹤舞滩头」的绝佳景致。这种设计既满足了观景需求，又体现了江南园林的精巧构思。", unlocked:false },
+      { id:3, title:"水文环境", content:"知鱼槛前为锦汇漪，池水与惠山泉相通，清澈见底。这种优质的水文环境不仅为鱼类提供了良好的生存条件，也让游人能清晰观赏水下景致，是体验「知鱼之乐」的重要前提。", unlocked:false },
+      { id:4, title:"乾隆与知鱼槛", content:"乾隆六次南巡，四次到访知鱼槛并题诗，使这里成为承载江南文脉的重要地标。他的诗作不仅赞美了此处风光，也表达了对庄子哲学思想的理解，其中「依槛知鱼乐，微吟验物情」尤为著名。", unlocked:false },
+      { id:5, title:"文化意义", content:"知鱼槛体现了中国传统文人将哲学思考融入日常生活环境的追求，是「天人合一」理念的物质载体。它将《庄子》的哲学思想转化为可感知的空间体验，让游人在观鱼赏景中体悟深奥的哲学道理。", unlocked:false },
+      { id:6, title:"当代价值", content:"今天的知鱼槛不仅是一处历史遗迹，更是人们体悟中国传统哲学、感受人与自然和谐关系的重要场所。其蕴含的生态智慧对现代社会仍有重要启示，提醒人们保持对自然的敬畏与共情。", unlocked:false }
+    ];
+
+    // 游戏数据
+    const gameData = {
+      mode: 'classic', // 'classic' | 'ai'
+      characters: {
+        zhuangzi: {
+          name: "庄子",
+          portrait: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/5deae3ddd0b247e9af014cd601625327~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=6Bzu8mmK8wh317lriB4wQEOfi50%3D",
+          description: "道家代表人物，主张自然无为"
+        },
+        huizi: {
+          name: "惠子",
+          portrait: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/2e894167e5144eb08911e0ffeac5bc6d~tplv-a9rns2rl98-image.image?rcl=20251105135752CB730307198DE97CB95F&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764914314&x-signature=F%2BwxErCn2TLL%2BirX7%2FrAY9u4%2BgY%3D",
+          description: "名家代表人物，擅长逻辑辩论"
+        },
+        qianlong: {
+          name: "乾隆",
+          portrait: "https://p11-doubao-search-sign.byteimg.com/labis/cdd06efff60a5409423d73f1dd0dd855~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777876453&x-signature=F8CvyfyI%2B8z1Ah86TrJxk6yN6SM%3D",
+          description: "清朝皇帝，喜爱诗词，著有《观鱼》等诗作"
+        }
+      },
+      debateRounds: [
+        {
+          speaker: "庄子",
+          content: "鯈鱼出游从容，是鱼之乐也。",
+          options: [
+            { text: "子非鱼，安知鱼之乐？", correct: true, speaker: "惠子" },
+            { text: "子非我，安知我不知鱼之乐？", correct: false, speaker: "庄子" },
+            { text: "我知之濠上也。", correct: false, speaker: "庄子" }
+          ]
+        },
+        {
+          speaker: "惠子",
+          content: "子非鱼，安知鱼之乐？",
+          options: [
+            { text: "子非我，安知我不知鱼之乐？", correct: true, speaker: "庄子" },
+            { text: "我非子，固不知子矣；子固非鱼也，子之不知鱼之乐，全矣！", correct: false, speaker: "惠子" },
+            { text: "请循其本。子曰‘汝安知鱼乐’云者，既已知吾知之而问我，我知之濠上也。", correct: false, speaker: "庄子" }
+          ]
+        },
+        {
+          speaker: "庄子",
+          content: "子非我，安知鱼之乐？",
+          options: [
+            { text: "我非子，固不知子矣；子固非鱼也，子之不知鱼之乐，全矣！", correct: true, speaker: "惠子" },
+            { text: "子非鱼，安知鱼之乐？", correct: false, speaker: "惠子" },
+            { text: "鯈鱼出游从容，是鱼之乐也。", correct: false, speaker: "庄子" }
+          ]
+        },
+        {
+          speaker: "惠子",
+          content: "我非子，固不知子矣；子固非鱼也，子之不知鱼之乐，全矣！",
+          options: [
+            { text: "请循其本。子曰‘汝安知鱼乐’云者，既已知吾知之而问我，我知之濠上也。", correct: true, speaker: "庄子" },
+            { text: "子非我，安知我不知鱼之乐？", correct: false, speaker: "庄子" },
+            { text: "子非鱼，安知鱼之乐？", correct: false, speaker: "惠子" }
+          ]
+        },
+        {
+          speaker: "庄子",
+          content: "请循其本。子曰‘汝安知鱼乐’云者，既已知吾知之而问我，我知之濠上也。",
+          options: [
+            { text: "子乃知鱼之乐也", correct: true, speaker: "惠子" },
+            { text: "我非子，固不知子矣", correct: false, speaker: "惠子" },
+            { text: "鯈鱼出游从容，是鱼之乐也。", correct: false, speaker: "庄子" }
+          ]
+        }
+      ],
+      currentRound: 0,
+      score: 0,
+      mistakes: 0,
+      maxMistakes: 3,
+      bestScore: localStorage.getItem('zhuanghuiBestScore') || 0,
+      currentRole: null,
+      opponentRole: null,
+
+      poetryCollections: [
+        {
+          title: "《观鱼》",
+          author: "乾隆",
+          fullText: "《观鱼》\n乾隆\n曲池风縠静，绿水镜光平。\n在藻悠然逝，依蒲自在行。\n网罛从未入，鳞鬣不须惊。\n依槛知鱼乐，微吟验物情。",
+          rounds: [
+            {
+              speaker: "乾隆",
+              content: "曲池风縠静",
+              options: [
+                { text: "绿水镜光平", correct: true, speaker: "player" },
+                { text: "清波漾细纹", correct: false, speaker: "player" },
+                { text: "池塘月色新", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "在藻悠然逝",
+              options: [
+                { text: "依蒲自在行", correct: true, speaker: "player" },
+                { text: "游鱼水面惊", correct: false, speaker: "player" },
+                { text: "荷风送清香", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "网罛从未入",
+              options: [
+                { text: "鳞鬣不须惊", correct: true, speaker: "player" },
+                { text: "鱼儿自在游", correct: false, speaker: "player" },
+                { text: "垂钓有高人", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "依槛知鱼乐",
+              options: [
+                { text: "微吟验物情", correct: true, speaker: "player" },
+                { text: "濠梁忆旧盟", correct: false, speaker: "player" },
+                { text: "欣然自得宁", correct: false, speaker: "player" }
+              ]
+            }
+          ]
+        },
+        {
+          title: "《知鱼矶》",
+          author: "乾隆",
+          fullText: "《知鱼矶》\n乾隆\n莫道鱼无知，亦有在沼时。\n莫道鱼无乐，亦有浮而跃。\n鱼自乐鱼自知耳，知乐否乎辨可已。\n月在天心风在水，不言之中存至理。",
+          rounds: [
+            {
+              speaker: "乾隆",
+              content: "莫道鱼无知",
+              options: [
+                { text: "亦有在沼时", correct: true, speaker: "player" },
+                { text: "濠梁知乐否", correct: false, speaker: "player" },
+                { text: "悠然自得宁", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "莫道鱼无乐",
+              options: [
+                { text: "亦有浮而跃", correct: true, speaker: "player" },
+                { text: "水中任潜跃", correct: false, speaker: "player" },
+                { text: "游鱼乐自知", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "鱼自乐鱼自知耳",
+              options: [
+                { text: "知乐否乎辨可已", correct: true, speaker: "player" },
+                { text: "何必劳劳辩惠庄", correct: false, speaker: "player" },
+                { text: "我知鱼乐在濠梁", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "月在天心风在水",
+              options: [
+                { text: "不言之中存至理", correct: true, speaker: "player" },
+                { text: "微吟验物情", correct: false, speaker: "player" },
+                { text: "鱼乐鱼自知", correct: false, speaker: "player" }
+              ]
+            }
+          ]
+        },
+        {
+          title: "《鱼乐》",
+          author: "乾隆",
+          fullText: "《鱼乐》\n乾隆\n禽去绝骇惊，涨生任潜跃。\n岂必藉濠梁，今来识鱼乐。",
+          rounds: [
+            {
+              speaker: "乾隆",
+              content: "禽去绝骇惊",
+              options: [
+                { text: "涨生任潜跃", correct: true, speaker: "player" },
+                { text: "游鱼水面跃", correct: false, speaker: "player" },
+                { text: "池鱼乐悠悠", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "岂必藉濠梁",
+              options: [
+                { text: "今来识鱼乐", correct: true, speaker: "player" },
+                { text: "我知鱼之乐", correct: false, speaker: "player" },
+                { text: "鱼乐我自知", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "鱼乐鱼自知",
+              options: [
+                { text: "何必劳劳辩", correct: true, speaker: "player" },
+                { text: "知之濠上也", correct: false, speaker: "player" },
+                { text: "子非我不知", correct: false, speaker: "player" }
+              ]
+            },
+            {
+              speaker: "乾隆",
+              content: "万物有天机",
+              options: [
+                { text: "鱼乐自悠然", correct: true, speaker: "player" },
+                { text: "何必问惠庄", correct: false, speaker: "player" },
+                { text: "我知鱼之乐", correct: false, speaker: "player" }
+              ]
+            }
+          ]
+        }
+      ],
+      currentPoetryRound: 0,
+      poetryScore: 0,
+      currentPoetryCollection: null,
+
+      // AI 辩论数据
+      aiDebate: {
+        opponent: 'zhuangzi', // 'zhuangzi' | 'huizi'
+        currentRound: 0,
+        maxRounds: 5,
+        history: [],           // {role:'player'|'ai',content:'...',roundScore?:number}
+        finalResult: null      // 'player'|'ai'|'draw'
+      }
+    };
+
+    // 音效系统
+    const AudioManager = {
+      // ★ 新增 interaction 音效
+      sounds: { correct:null, incorrect:null, victory:null, failure:null, background:null, interaction:null },
+      backgroundMusicPlaying: false,
+      init() {
+        // 使用本地音效文件（和 index2.html 同目录）
+        // 你已经放了：correct.mp3（选对）、incorrect.mp3（选错）
+
+        this.sounds.correct   = this.createAudioContext('correct.mp3');    // 选对音效
+        this.sounds.incorrect = this.createAudioContext('incorrect.mp3');  // 选错音效
+
+        // 胜利/失败 可以先共用，之后你需要可以再换成别的本地文件
+        this.sounds.victory = this.createAudioContext('correct.mp3');
+        this.sounds.failure = this.createAudioContext('incorrect.mp3');
+
+        // 互动音效：先不用外网链接，置为空，避免 403 和 NotSupportedError
+        this.sounds.interaction = null;
+
+        this.initBackgroundMusic();
+      },
+      initBackgroundMusic() {
+        console.log('初始化背景音乐');
+        this.sounds.background = new Audio();
+        this.sounds.background.volume = 0.3;
+        this.sounds.background.loop = true;
+        this.sounds.background.preload = 'auto';
+        this.musicUrls = [
+          'bgm.mp3',
+          'https://cdn.pixabay.com/download/audio/2022/03/15/audio_8d3e9d4a03.mp3?filename=chinese-zither-112342.mp3',
+          'https://cdn.pixabay.com/download/audio/2022/01/18/audio_5f358a227f.mp3?filename=chinese-traditional-music-112343.mp3'
+        ];
+        this.currentMusicIndex = 0;
+
+        this.sounds.background.addEventListener('loadedmetadata', () => {
+          console.log('背景音乐元数据加载成功，时长:', this.sounds.background.duration);
+        });
+        this.sounds.background.addEventListener('canplaythrough', () => {
+          console.log('背景音乐可以播放');
+        });
+        this.sounds.background.addEventListener('error', (e) => {
+          console.error('背景音乐加载或播放错误:', e);
+          console.error('错误代码:', e.target.error.code);
+          this.currentMusicIndex++;
+          if (this.currentMusicIndex < this.musicUrls.length) {
+            console.log(`尝试第 ${this.currentMusicIndex + 1} 个备用音乐URL: ${this.musicUrls[this.currentMusicIndex]}`);
+            this.sounds.background.src = this.musicUrls[this.currentMusicIndex];
+            this.sounds.background.load();
+          } else {
+            console.log('所有音乐URL都无法播放，创建本地音效');
+            this.createLocalSound();
+          }
+        });
+        this.sounds.background.src = this.musicUrls[this.currentMusicIndex];
+        this.sounds.background.load();
+        this.tryPlayBackgroundMusic();
+      },
+      createLocalSound() {
+        console.log('创建本地音效');
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          const context = new AudioContext();
+          this.playLocalSound = () => {
+            const oscillator = context.createOscillator();
+            const gainNode = context.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(context.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(330, context.currentTime);
+            gainNode.gain.setValueAtTime(0.3, context.currentTime);
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1.5);
+            oscillator.stop(context.currentTime + 1.5);
+            console.log('本地音效播放成功');
+          };
+          this.sounds.background.play = () => {
+            return new Promise((resolve) => {
+              this.playLocalSound();
+              resolve();
+            });
+          };
+          this.sounds.background.pause = () => {};
+          console.log('本地音效创建成功');
+        } catch (e) {
+          console.error('创建本地音效失败:', e);
+          this.playLocalSound = () => {
+            console.log('播放本地音效（模拟）');
+          };
+        }
+      },
+      tryPlayBackgroundMusic() {
+        this.sounds.background.play().then(() => {
+          this.backgroundMusicPlaying = true;
+          console.log('背景音乐自动播放成功');
+          GameManager.updateMusicButtonState();
+        }).catch(e => {
+          console.log('背景音乐自动播放失败，等待用户交互:', e);
+          const playOnInteraction = () => {
+            this.sounds.background.play().then(() => {
+              this.backgroundMusicPlaying = true;
+              console.log('背景音乐在用户交互后播放成功');
+              GameManager.updateMusicButtonState();
+            }).catch(e2 => {
+              console.log('用户交互后播放背景音乐仍然失败:', e2);
+            });
+            document.removeEventListener('click', playOnInteraction);
+            document.removeEventListener('touchstart', playOnInteraction);
+            document.removeEventListener('keydown', playOnInteraction);
+          };
+          document.addEventListener('click', playOnInteraction);
+          document.addEventListener('touchstart', playOnInteraction);
+          document.addEventListener('keydown', playOnInteraction);
+        });
+      },
+      toggleBackgroundMusic() {
+        console.log('=== 切换背景音乐状态 ===');
+        console.log('当前状态:', this.backgroundMusicPlaying);
+        console.log('当前时间:', new Date().toLocaleTimeString());
+        try {
+          if (this.backgroundMusicPlaying) {
+            console.log('执行暂停操作');
+            this.sounds.background.pause();
+            this.backgroundMusicPlaying = false;
+            console.log('背景音乐已暂停');
+            GameManager.updateMusicButtonState();
+          } else {
+            console.log('执行播放操作');
+            if (this.sounds.background.readyState < 2) {
+              console.log('音频尚未加载，尝试加载');
+              this.sounds.background.load();
+              const playWhenLoaded = () => {
+                console.log('音频加载完成，尝试播放');
+                this.sounds.background.play().then(() => {
+                  this.backgroundMusicPlaying = true;
+                  console.log('背景音乐加载后播放成功');
+                  GameManager.updateMusicButtonState();
+                }).catch(e => {
+                  console.error('背景音乐加载后播放失败:', e);
+                  this.backgroundMusicPlaying = false;
+                  GameManager.updateMusicButtonState();
+                });
+                this.sounds.background.removeEventListener('loadeddata', playWhenLoaded);
+              };
+              this.sounds.background.addEventListener('loadeddata', playWhenLoaded);
+            } else {
+              console.log('音频已加载，直接尝试播放');
+              this.sounds.background.play().then(() => {
+                this.backgroundMusicPlaying = true;
+                console.log('背景音乐播放成功');
+                GameManager.updateMusicButtonState();
+              }).catch(e => {
+                console.error('播放背景音乐失败:', e);
+                this.backgroundMusicPlaying = false;
+                GameManager.updateMusicButtonState();
+              });
+            }
+          }
+        } catch (error) {
+          console.error('toggleBackgroundMusic 执行出错:', error);
+          this.backgroundMusicPlaying = false;
+          GameManager.updateMusicButtonState();
+        }
+        console.log('切换操作完成，最终状态:', this.backgroundMusicPlaying);
+        console.log('========================');
+        return this.backgroundMusicPlaying;
+      },
+      createAudioContext(url) {
+        const audio = new Audio(url);
+        audio.preload = 'auto';
+        return audio;
+      },
+      playSound(name) {
+        const tpl = this.sounds[name];
+        if (!tpl) {
+          console.warn('要播放的音效未初始化:', name);
+          return;
+        }
+        try {
+          const s = tpl.cloneNode();
+          s.play().catch(err => {
+            console.error('播放音效失败:', name, err);
+          });
+        } catch (e) {
+          console.error('克隆音效失败:', name, e);
+        }
+      }
+    };
+
+    // ===== DeepSeek API 配置 =====
+    const DEEPSEEK_API_KEY = 'sk-4bb03f5c0d7247e2888f2762542e4ff9'; // 你的 Key（注意不要泄露到公网）
+    const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
+
+    // 单轮 AI 复盘（深度思考模型）
+    async function callDeepSeekAIDebate({ opponent, round, history, playerText }) {
+      const systemPromptZhuangzi = `
+你现在扮演战国时期思想家【庄子】，语言风格接近《庄子》原文，可以使用比喻、寓言、反问和洒脱的语气。
+本回合主题为“知鱼之乐”，你正在与一位学者辩论：人是否能知鱼之乐、知他者之心。
+请用简短几句话回应对方，既要有思想张力，又要保持庄子式的飘逸含蓄。
+请同时给出一个你心中的“本轮判分”：如果你觉得对方此轮说得好、可取，就让对方略胜；如果觉得对方理路偏狭，便认为自己略胜；旗鼓相当则平局。
+回复 JSON 格式：{"reply": "你的庄子式复述", "roundScore": 1 | 0 | -1}
+不要输出 JSON 以外的任何文字。
+`;
+      const systemPromptHuizi = `
+你现在扮演战国时期名辩家【惠子】，语言风格偏理性、冷静、逻辑严密，可以用推理、假设和反驳。
+本回合主题为“知鱼之乐”，你正在与一位学者辩论：人是否能知鱼之乐、知他者之心。
+请用简短几句话回应对方，要体现严密的逻辑与辩难精神。
+请同时给出一个你心中的“本轮判分”：如果你觉得对方此轮说得好、可取，就让对方略胜；如果觉得对方理路不通，就认为自己略胜；旗鼓相当则平局。
+回复 JSON 格式：{"reply": "你的惠子式复述", "roundScore": 1 | 0 | -1}
+不要输出 JSON 以外的任何文字。
+`;
+      const systemPrompt = opponent === 'zhuangzi' ? systemPromptZhuangzi : systemPromptHuizi;
+
+      const messages = [{ role:'system', content:systemPrompt }];
+      history.forEach(h => {
+        if (h.role === 'player') messages.push({ role:'user', content:h.content });
+        else if (h.role === 'ai') messages.push({ role:'assistant', content:h.content });
+      });
+      messages.push({ role:'user', content:`第 ${round} 轮，对方的辩词是：${playerText}` });
+
+      const resp = await fetch(DEEPSEEK_API_URL, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${DEEPSEEK_API_KEY}`
+        },
+        body:JSON.stringify({
+          model: 'deepseek-chat',   // 深度思考模型
+          messages,
+          temperature:0.8
+        })
+      });
+      if (!resp.ok) throw new Error('DeepSeek API 请求失败：' + resp.status);
+      const data = await resp.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      let reply = '', roundScore = 0;
+      try {
+        const parsed = JSON.parse(content);
+        reply = parsed.reply || '';
+        roundScore = typeof parsed.roundScore === 'number' ? parsed.roundScore : 0;
+      } catch {
+        reply = content || '且与子辩至此，容他日复论。';
+        roundScore = 0;
+      }
+      return { reply, roundScore };
+    }
+
+    // 整场辩论总结（深度思考模型）
+    async function callDeepSeekSummary({ opponent, history }) {
+      const opponentName = opponent === 'zhuangzi' ? '庄子' : '惠子';
+
+      const systemPrompt = `。
+你现在扮演战国时期思想家【${opponentName}】，需要对刚刚完成的整场「知鱼之乐」辩论做一个总结评判。
+
+你会看到完整的对话历史（从第 1 轮到第 5 轮），其中：
+- role 为 "player" 的，是人类玩家的发言；
+- role 为 "ai" 的，是你（${opponentName}）的发言。
+
+请你根据双方在五轮中的整体表现（论证力度、逻辑、立场自洽、对经典语境的把握等），
+判断此次辩论中，谁更占上风：
+
+- 如果你认为「玩家」整体表现更好，请判定 winner 为 "player"；
+- 如果你认为你自己（${opponentName}）整体更胜一筹，请判定 winner 为 "ai"；
+- 如果你认为旗鼓相当、难分高下，请判定 winner 为 "draw"。
+
+同时，请给出一小段约 2～4 句的中文总结，用古雅但可读的文言/雅言，点明高下与得失。
+
+严格按如下 JSON 结构返回（不要多输出其他内容）：
+{
+  "winner": "player" | "ai" | "draw",
+  "summary": "你的简短总结文字"
+}
+`;
+
+      const messages = [{ role:'system', content: systemPrompt }];
+      history.forEach(h => {
+        if (h.role === 'player') {
+          messages.push({ role:'user', content: h.content });
+        } else if (h.role === 'ai') {
+          messages.push({ role:'assistant', content: h.content });
+        }
+      });
+
+      const resp = await fetch(DEEPSEEK_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-reasoner',
+          messages,
+          temperature: 0.7
+        })
+      });
+      if (!resp.ok) throw new Error('DeepSeek Summary 请求失败：' + resp.status);
+      const data = await resp.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      let winner = 'draw';
+      let summary = '';
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed.winner === 'player' || parsed.winner === 'ai' || parsed.winner === 'draw') {
+          winner = parsed.winner;
+        }
+        summary = parsed.summary || '';
+      } catch {
+        summary = content || '是非曲直，姑置勿论，且以此番辨析为乐。';
+      }
+      return { winner, summary };
+    }
+
+    const GameManager = {
+      // ★ 经典模式提示计时器
+      hintTimer: null,
+      // ★ 乾隆对诗提示计时器
+      poetryHintTimer: null,
+
+      init() {
+        AudioManager.init();
+        this.bindModeSwitch();
+        this.bindCharacterCards();
+        this.bindClassicUIEvents();
+        this.bindAIDebateEvents();
+        this.bindAIToPoetryButton();
+        this.bindPoetryResultButtons();
+        document.getElementById('best-score').textContent = gameData.bestScore;
+
+        // ★ 初始化右上角音乐按钮
+        this.addMusicControlButton();
+      },
+
+      // 模式切换
+      bindModeSwitch() {
+        const classicBtn = document.getElementById('mode-classic');
+        const aiBtn = document.getElementById('mode-ai');
+        if (!classicBtn || !aiBtn) return;
+
+        classicBtn.addEventListener('click', () => {
+          gameData.mode = 'classic';
+          classicBtn.classList.add('bg-black','text-white');
+          classicBtn.classList.remove('bg-white','text-black');
+          aiBtn.classList.remove('bg-black','text-white');
+          aiBtn.classList.add('bg-white','text-black');
+
+          document.getElementById('ai-debate-game').classList.add('hidden');
+          document.getElementById('debate-game').classList.add('hidden');
+          document.getElementById('character-selection').classList.remove('hidden');
+        });
+
+        aiBtn.addEventListener('click', () => {
+          gameData.mode = 'ai';
+          aiBtn.classList.add('bg-black','text-white');
+          aiBtn.classList.remove('bg-white','text-black');
+          classicBtn.classList.remove('bg-black','text-white');
+          classicBtn.classList.add('bg-white','text-black');
+
+          document.getElementById('debate-game').classList.add('hidden');
+          document.getElementById('ai-debate-game').classList.add('hidden');
+          document.getElementById('character-selection').classList.remove('hidden');
+        });
+      },
+
+      bindCharacterCards() {
+        document.querySelectorAll('.character-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const c = card.dataset.character;
+            if (!c) return;
+            if (gameData.mode === 'classic') this.startClassicDebate(c);
+            else this.startAIDebate(c);
+          });
+        });
+      },
+
+      // 经典模式 UI
+      bindClassicUIEvents() {
+        document.getElementById('restart-debate').addEventListener('click', () => {
+          this.resetGame();
+        });
+        document.getElementById('mobile-restart').addEventListener('click', () => {
+          this.resetGame();
+        });
+        document.getElementById('mobile-music-toggle').addEventListener('click', () => {
+          this.toggleMusic();
+        });
+        document.getElementById('play-again').addEventListener('click', () => {
+          document.getElementById('result-modal').classList.add('hidden');
+          this.startQianlongPoetry();
+        });
+        document.getElementById('back-to-debate').addEventListener('click', () => {
+          document.getElementById('qianlong-poetry').classList.add('hidden');
+          document.getElementById('debate-game').classList.remove('hidden');
+        });
+        document.getElementById('restart-poetry').addEventListener('click', () => {
+          this.startQianlongPoetry();
+        });
+      },
+
+      // ===== 音乐按钮相关 =====
+      addMusicControlButton() {
+        const btn = document.getElementById('global-music-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          this.toggleMusic();
+        });
+        this.updateMusicButtonState();
+      },
+      toggleMusic() {
+        AudioManager.toggleBackgroundMusic();
+        this.updateMusicButtonState();
+      },
+      updateMusicButtonState() {
+        const btn = document.getElementById('global-music-toggle');
+        if (!btn) return;
+        const icon = btn.querySelector('i');
+        if (!icon) return;
+
+        if (AudioManager.backgroundMusicPlaying) {
+          btn.classList.remove('border-gray-400');
+          btn.classList.add('border-red-600');
+          icon.classList.remove('text-gray-400');
+          icon.classList.add('text-red-600', 'animate-spin');
+        } else {
+          btn.classList.remove('border-red-600');
+          btn.classList.add('border-gray-400');
+          icon.classList.remove('text-red-600', 'animate-spin');
+          icon.classList.add('text-gray-400');
+        }
+      },
+
+      // 经典模式开始
+      startClassicDebate(character) {
+        gameData.currentRole = character;
+        gameData.opponentRole = character === 'zhuangzi' ? 'huizi' : 'zhuangzi';
+        gameData.currentRound = 0;
+        gameData.score = 0;
+        gameData.mistakes = 0;
+        document.getElementById('current-score').textContent = '0';
+
+        document.getElementById('player-portrait').src = gameData.characters[character].portrait;
+        document.getElementById('player-name').textContent = gameData.characters[character].name;
+        document.getElementById('opponent-portrait').src = gameData.characters[gameData.opponentRole].portrait;
+        document.getElementById('opponent-name').textContent = gameData.characters[gameData.opponentRole].name;
+
+        document.getElementById('character-selection').classList.add('hidden');
+        document.getElementById('debate-game').classList.remove('hidden');
+        this.startDebateRound(0);
+      },
+
+      // 经典模式单轮题目
+      startDebateRound(idx) {
+        // ★ 每次进入新题，先清除上一题的提示计时器
+        this.clearDebateHintTimer();
+
+        if (idx >= gameData.debateRounds.length) {
+          this.showVictory();
+          return;
+        }
+        gameData.currentRound = idx;
+        document.getElementById('current-round').textContent = idx + 1;
+        const round = gameData.debateRounds[idx];
+        document.getElementById('debate-content').innerHTML =
+          `<span class="font-bold">${round.speaker}曰：</span>${round.content}`;
+
+        const box = document.getElementById('debate-options');
+        box.innerHTML = '';
+        const shuffled = [...round.options].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+          const div = document.createElement('div');
+          div.className =
+            'debate-option bg-white bg-opacity-70 border-2 border-black rounded-lg p-4 cursor-pointer';
+          div.textContent = opt.text;
+          div.dataset.correct = opt.correct;
+          div.addEventListener('click', () => this.handleOptionSelect(div, opt.correct));
+          box.appendChild(div);
+        });
+
+        // ★ 启动 8 秒后自动高亮正确选项前几个字的提示计时器
+        this.startDebateHintTimer();
+      },
+
+      // ★ 启动经典模式的提示计时器（8 秒后提示）
+      startDebateHintTimer() {
+        this.clearDebateHintTimer();
+
+        this.hintTimer = setTimeout(() => {
+          const options = document.querySelectorAll('#debate-options .debate-option');
+          if (!options || !options.length) return;
+
+          options.forEach(optEl => {
+            if (optEl.dataset.correct === 'true') {
+              const text = optEl.textContent || '';
+              if (!text.trim()) return;
+              // 提示：把正确选项前几个字变红，这里取前 3 个字
+              const hintLen = Math.min(3, text.length);
+              const head = text.slice(0, hintLen);
+              const tail = text.slice(hintLen);
+              optEl.innerHTML =
+                `<span style="color:#dc2626; transition: color 0.6s ease;">${head}</span>${tail}`;
+            }
+          });
+        }, 8000); // 8000ms = 8 秒
+      },
+
+      // ★ 清除经典模式提示计时器
+      clearDebateHintTimer() {
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
+        }
+      },
+
+      // 经典模式选项点击
+      handleOptionSelect(el, isCorrect) {
+        // ★ 玩家已作答，清除本题提示计时器
+        this.clearDebateHintTimer();
+
+        // 先不要播放互动音效（你还没有本地 interaction.mp3）
+        // AudioManager.playSound('interaction');
+
+        const opts = document.querySelectorAll('.debate-option');
+        opts.forEach(o => { o.style.pointerEvents = 'none'; });
+
+        if (isCorrect) {
+          el.classList.add('correct');
+          gameData.score += 1;
+          document.getElementById('current-score').textContent = gameData.score;
+          AudioManager.playSound('correct');
+
+          if (gameData.currentRound >= gameData.debateRounds.length - 1) {
+            setTimeout(() => this.showVictory(), 1000);
+          } else {
+            setTimeout(() => this.startDebateRound(gameData.currentRound + 1), 1500);
+          }
+        } else {
+          el.classList.add('incorrect');
+          opts.forEach(o => {
+            if (o.dataset.correct === 'true') o.classList.add('correct');
+          });
+          AudioManager.playSound('incorrect');
+          gameData.mistakes += 1;
+          if (gameData.mistakes >= gameData.maxMistakes) {
+            setTimeout(() => this.showFailure(), 2000);
+          } else {
+            setTimeout(() => this.startDebateRound(gameData.currentRound + 1), 2000);
+          }
+        }
+      },
+
+      unlockKnowledge() {
+        const unlockedCount = knowledgeTrivia.filter(k=>k.unlocked).length;
+        if (unlockedCount >= knowledgeTrivia.length) return;
+
+        const target = knowledgeTrivia.find(k=>!k.unlocked);
+        if (!target) return;
+        target.unlocked = true;
+        const newCount = unlockedCount + 1;
+        localStorage.setItem('knowledgeUnlockedCount', String(newCount));
+
+        const panel = document.getElementById('knowledge-trivia');
+        if (panel && !panel.classList.contains('hidden')) {
+          const container = document.getElementById('knowledge-container');
+          const countEl = document.getElementById('unlocked-count');
+          container.innerHTML = '';
+          knowledgeTrivia.forEach(item=>{
+            const card = document.createElement('div');
+            card.className = `border-2 border-black rounded-lg p-4 mb-4 bg-white bg-opacity-80 ${
+              item.unlocked ? '' : 'opacity-50'
+            }`;
+            const title = document.createElement('h3');
+            title.className = 'text-xl font-brush mb-2';
+            title.textContent = item.title;
+            const content = document.createElement('p');
+            content.className = 'text-ink-light text-sm md:text-base';
+            content.textContent = item.unlocked
+              ? item.content
+              : '未解锁：通过辩论获胜、连续完成辩论或完成乾隆对诗来解锁此条知识。';
+            card.appendChild(title); card.appendChild(content);
+            container.appendChild(card);
+          });
+          if (countEl) countEl.textContent = `${newCount}/${knowledgeTrivia.length}`;
+        }
+      },
+
+      showVictory() {
+        this.unlockKnowledge();
+        if (gameData.score > gameData.bestScore) {
+          gameData.bestScore = gameData.score;
+          localStorage.setItem('zhuanghuiBestScore', gameData.bestScore);
+          document.getElementById('best-score').textContent = gameData.bestScore;
+        }
+        document.getElementById('result-title').textContent = '辩论胜利！';
+
+        // ★ 调整“乾隆曰”在弹窗中的位置和排版
+        document.getElementById('result-content').innerHTML = `
+          <p class="mb-4">子乃知鱼之乐也</p>
+          <p class="mb-6">
+            庄子曰："请循其本。子曰『汝安知鱼乐』云者，既已知吾知之而问我，我知之濠上也。"
+          </p>
+          <p class="text-accent mt-2">
+            乾隆曰："如此精彩的辩论，我也为此赋诗一首。"
+          </p>
+        `;
+
+        document.getElementById('final-score').textContent = gameData.score;
+        document.getElementById('result-modal').classList.remove('hidden');
+        AudioManager.playSound('victory');
+      },
+
+      showFailure() {
+        document.getElementById('result-title').textContent = '辩论失败';
+        document.getElementById('result-content').innerHTML =
+          '辩论不止当前，且待重来<br><br><span class="text-accent">乾隆曰："辩论虽未胜，亦可观鱼作乐，我有一诗请君共赏"</span>';
+        document.getElementById('final-score').textContent = gameData.score;
+        document.getElementById('result-modal').classList.remove('hidden');
+        AudioManager.playSound('failure');
+      },
+
+      resetGame() {
+        // 清一下提示计时器，防止残留
+        this.clearDebateHintTimer();
+        this.clearPoetryHintTimer();
+
+        gameData.currentRound = 0;
+        gameData.score = 0;
+        gameData.mistakes = 0;
+        gameData.currentPoetryRound = 0;
+        gameData.poetryScore = 0;
+        gameData.currentPoetryCollection = null;
+        document.getElementById('current-score').textContent = '0';
+        document.getElementById('result-modal').classList.add('hidden');
+        document.getElementById('poetry-result-modal').classList.add('hidden');
+        document.getElementById('qianlong-poetry').classList.add('hidden');
+        document.getElementById('character-selection').classList.remove('hidden');
+        document.getElementById('debate-game').classList.add('hidden');
+        document.getElementById('ai-debate-game').classList.add('hidden');
+      },
+
+      // 乾隆对诗
+      startQianlongPoetry() {
+        document.getElementById('debate-game').classList.add('hidden');
+        document.getElementById('ai-debate-game').classList.add('hidden');
+        document.getElementById('qianlong-poetry').classList.remove('hidden');
+
+        gameData.currentPoetryRound = 0;
+        gameData.poetryScore = 0;
+        document.getElementById('poetry-current-score').textContent = '0';
+
+        const idx = Math.floor(Math.random()*gameData.poetryCollections.length);
+        gameData.currentPoetryCollection = gameData.poetryCollections[idx];
+
+        document.getElementById('poetry-player-portrait').src = gameData.characters[gameData.currentRole || 'zhuangzi'].portrait;
+        document.getElementById('poetry-player-name').textContent = gameData.characters[gameData.currentRole || 'zhuangzi'].name;
+        document.getElementById('poetry-opponent-portrait').src = gameData.characters.qianlong.portrait;
+        document.getElementById('poetry-opponent-name').textContent = gameData.characters.qianlong.name;
+
+        gameData.currentPoetryCollection.rounds.forEach(r=>{
+          r.options.forEach(o=>{ if (o.speaker === 'player') o.speaker = gameData.currentRole || 'zhuangzi'; });
+        });
+
+        this.startPoetryRound(0);
+      },
+
+      startPoetryRound(idx) {
+        // ★ 每次进入新一轮对诗，先清除上一轮的提示计时器
+        this.clearPoetryHintTimer();
+
+        if (!gameData.currentPoetryCollection) {
+          gameData.currentPoetryCollection = gameData.poetryCollections[0];
+        }
+        if (idx >= gameData.currentPoetryCollection.rounds.length) {
+          this.showPoetryResult();
+          return;
+        }
+        gameData.currentPoetryRound = idx;
+        document.getElementById('current-poetry-round').textContent = idx+1;
+        const round = gameData.currentPoetryCollection.rounds[idx];
+        document.getElementById('poetry-content').innerHTML =
+          `<span class="font-bold">${round.speaker}曰：</span>${round.content}`;
+        const box = document.getElementById('poetry-options');
+        box.innerHTML = '';
+        const shuffled = [...round.options].sort(()=>Math.random()-0.5);
+        shuffled.forEach(opt=>{
+          const div = document.createElement('div');
+          div.className =
+            'debate-option bg-white bg-opacity-70 border-2 border-black rounded-lg p-4 cursor-pointer';
+          div.textContent = opt.text;
+          div.dataset.correct = opt.correct;
+          div.addEventListener('click', ()=>this.handlePoetryOptionSelect(div,opt.correct));
+          box.appendChild(div);
+        });
+
+        // ★ 启动 8 秒后自动提示正确选项的计时器
+        this.startPoetryHintTimer();
+      },
+
+      // ★ 启动乾隆对诗的提示计时器（8 秒后提示）
+      startPoetryHintTimer() {
+        this.clearPoetryHintTimer();
+
+        this.poetryHintTimer = setTimeout(() => {
+          const options = document.querySelectorAll('#poetry-options .debate-option');
+          if (!options || !options.length) return;
+
+          options.forEach(optEl => {
+            if (optEl.dataset.correct === 'true') {
+              const text = optEl.textContent || '';
+              if (!text.trim()) return;
+              // 提示：把正确选项前几个字变红，这里取前 3 个字
+              const hintLen = Math.min(3, text.length);
+              const head = text.slice(0, hintLen);
+              const tail = text.slice(hintLen);
+              optEl.innerHTML =
+                `<span style="color:#dc2626; transition: color 0.6s ease;">${head}</span>${tail}`;
+            }
+          });
+        }, 8000); // 8000ms = 8 秒
+      },
+
+      // ★ 补充：清除乾隆对诗提示计时器
+      clearPoetryHintTimer() {
+        if (this.poetryHintTimer) {
+          clearTimeout(this.poetryHintTimer);
+          this.poetryHintTimer = null;
+        }
+      },
+
+      handlePoetryOptionSelect(el, isCorrect) {
+        // ★ 玩家在对诗中作答，清除本轮提示计时器
+        this.clearPoetryHintTimer();
+
+        // 先不要播放互动音效（你还没有本地 interaction.mp3）
+        // AudioManager.playSound('interaction');
+
+        const opts = document.querySelectorAll('#poetry-options .debate-option');
+        opts.forEach(o=>{ o.style.pointerEvents='none'; });
+
+        if (isCorrect) {
+          el.classList.add('correct');
+          gameData.poetryScore += 1;
+          document.getElementById('poetry-current-score').textContent = gameData.poetryScore;
+          AudioManager.playSound('correct');
+
+          if (gameData.currentPoetryRound >= gameData.currentPoetryCollection.rounds.length - 1) {
+            setTimeout(()=>this.showPoetryResult(),1500);
+          } else {
+            setTimeout(()=>this.startPoetryRound(gameData.currentPoetryRound + 1),1500);
+          }
+        } else {
+          el.classList.add('incorrect');
+          opts.forEach(o=>{ if (o.dataset.correct === 'true') o.classList.add('correct'); });
+          AudioManager.playSound('incorrect');
+          if (gameData.currentPoetryRound >= gameData.currentPoetryCollection.rounds.length - 1) {
+            setTimeout(()=>this.showPoetryResult(),2000);
+          } else {
+            setTimeout(()=>this.startPoetryRound(gameData.currentPoetryRound + 1),2000);
+          }
+        }
+      },
+
+      showPoetryResult() {
+        if (!gameData.currentPoetryCollection) {
+          const idx = Math.floor(Math.random()*gameData.poetryCollections.length);
+          gameData.currentPoetryCollection = gameData.poetryCollections[idx];
+        }
+        this.unlockKnowledge();
+
+        const titleEl = document.getElementById('poetry-result-title');
+        const contentEl = document.getElementById('poetry-result-content');
+        const scoreEl = document.getElementById('poetry-final-score');
+        titleEl.textContent = '对诗结束';
+        const fullTitle = gameData.currentPoetryCollection.title || '观鱼';
+        const fullText = gameData.currentPoetryCollection.fullText || '';
+        contentEl.innerHTML =
+          `<p class="mb-4">乾隆《${fullTitle.replace(/[《》]/g,'')}》全诗：</p>` +
+          `<p class="font-brush text-xl leading-relaxed whitespace-pre-line">${fullText}</p>`;
+        scoreEl.textContent = gameData.poetryScore;
+        document.getElementById('poetry-result-modal').classList.remove('hidden');
+      },
+
+      bindPoetryResultButtons() {
+        const btn = document.getElementById('play-again-poetry');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          document.getElementById('poetry-result-modal').classList.add('hidden');
+          document.getElementById('qianlong-poetry').classList.add('hidden');
+          gameData.currentPoetryRound = 0;
+          gameData.poetryScore = 0;
+          gameData.currentPoetryCollection = null;
+          document.getElementById('character-selection').classList.remove('hidden');
+        });
+      },
+
+      // AI 模式
+      startAIDebate(opponent) {
+        gameData.aiDebate.opponent = opponent;
+        gameData.aiDebate.currentRound = 0;
+        gameData.aiDebate.history = [];
+        gameData.aiDebate.finalResult = null;
+
+        gameData.currentRole = opponent === 'zhuangzi' ? 'huizi' : 'zhuangzi';
+
+        document.getElementById('character-selection').classList.add('hidden');
+        document.getElementById('debate-game').classList.add('hidden');
+        document.getElementById('ai-debate-game').classList.remove('hidden');
+
+        const nameEl = document.getElementById('ai-opponent-name');
+        const descEl = document.getElementById('ai-opponent-desc');
+        const avatarImg = document.getElementById('ai-opponent-avatar');
+
+        if (opponent === 'zhuangzi') {
+          nameEl.textContent = '庄子';
+          descEl.textContent = '逍遥游者，善以譬喻言理。';
+          if (avatarImg) avatarImg.src = gameData.characters.zhuangzi.portrait;
+        } else {
+          nameEl.textContent = '惠子';
+          descEl.textContent = '名辩之士，善以逻辑析理。';
+          if (avatarImg) avatarImg.src = gameData.characters.huizi.portrait;
+        }
+
+        document.getElementById('ai-current-round').textContent = '1';
+        const log = document.getElementById('ai-dialogue-log');
+        log.innerHTML = `
+          <p class="text-ink-light mb-2">第 1 轮辩论开始。</p>
+          <p><span class="font-bold">${opponent === 'zhuangzi' ? '庄子' : '惠子'}：</span>
+          子亦知鱼乐乎？不若言之，以辩高下。</p>
+        `;
+      },
+
+      bindAIDebateEvents() {
+        const sendBtn = document.getElementById('ai-send-btn');
+        const input = document.getElementById('ai-player-input');
+        if (!sendBtn || !input) return;
+        sendBtn.addEventListener('click', async () => {
+          const text = input.value.trim();
+          if (!text) return;
+          sendBtn.disabled = true;
+          try {
+            await this.handleAISend(text);
+            input.value = '';
+          } finally {
+            sendBtn.disabled = false;
+          }
+        });
+      },
+
+      // AI 辩论结束后“游园赋诗”按钮
+      bindAIToPoetryButton() {
+        const btn = document.getElementById('ai-to-poetry-btn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          document.getElementById('ai-to-poetry-wrapper')?.classList.add('hidden');
+          document.getElementById('ai-debate-game')?.classList.add('hidden');
+          this.startQianlongPoetry();
+        });
+      },
+
+      async handleAISend(playerText) {
+        const { aiDebate } = gameData;
+        const log = document.getElementById('ai-dialogue-log');
+        if (!log) return;
+        const round = aiDebate.currentRound + 1;
+        const opponentName = aiDebate.opponent === 'zhuangzi' ? '庄子' : '惠子';
+
+        aiDebate.history.push({ role:'player', content:playerText });
+        log.insertAdjacentHTML('beforeend',
+          `<div><p class="font-bold text-ink mb-1">你（第 ${round} 轮）：</p><p>${this.escapeHTML(playerText)}</p></div>`
+        );
+        log.scrollTop = log.scrollHeight;
+
+        const thinkingId = `ai-thinking-${Date.now()}`;
+        log.insertAdjacentHTML('beforeend',
+          `<p id="${thinkingId}" class="text-gray-500 mt-2">${opponentName} 正在思考你的辩词……</p>`
+        );
+        log.scrollTop = log.scrollHeight;
+
+        let aiReply, aiRoundScore;
+        try {
+          const res = await callDeepSeekAIDebate({
+            opponent: aiDebate.opponent,
+            round,
+            history: aiDebate.history,
+            playerText
+          });
+          aiReply = res.reply;
+          aiRoundScore = res.roundScore;
+        } catch (e) {
+          aiReply = '今日心绪不宁，且与子辩至此，容他日复论。';
+          aiRoundScore = 0;
+          console.error(e);
+        }
+
+        document.getElementById(thinkingId)?.remove();
+        aiDebate.history.push({ role:'ai', content:aiReply, roundScore:aiRoundScore });
+
+        log.insertAdjacentHTML('beforeend',
+          `<div class="mt-2"><p class="font-bold text-ink.mb-1">${opponentName}：</p><p>${this.escapeHTML(aiReply)}</p></div>`
+        );
+        log.scrollTop = log.scrollHeight;
+
+        aiDebate.currentRound++;
+        if (aiDebate.currentRound >= aiDebate.maxRounds) {
+          await this.finishAIDebate();
+        } else {
+          document.getElementById('ai-current-round').textContent = String(aiDebate.currentRound + 1);
+          log.insertAdjacentHTML('beforeend',
+            `<p class="text-ink-light mt-4">—— 第 ${aiDebate.currentRound + 1} 轮 ——</p>`
+          );
+          log.scrollTop = log.scrollHeight;
+        }
+      },
+
+      async finishAIDebate() {
+        const { aiDebate } = gameData;
+        const total = aiDebate.history.reduce((sum,h)=>{
+          if (typeof h.roundScore === 'number') return sum + h.roundScore;
+          return sum;
+        },0);
+        if (total > 0) aiDebate.finalResult = 'player';
+        else if (total < 0) aiDebate.finalResult = 'ai';
+        else aiDebate.finalResult = 'draw';
+
+        const log = document.getElementById('ai-dialogue-log');
+        const opponentName = aiDebate.opponent === 'zhuangzi' ? '庄子' : '惠子';
+
+        if (log) {
+          log.insertAdjacentHTML('beforeend',
+            `<p class="mt-4 text-ink-light">—— 五轮攻辩已毕，正在请 ${opponentName} 评点此番高下……</p>`
+          );
+          log.scrollTop = log.scrollHeight;
+        }
+
+        let winner = aiDebate.finalResult;
+        let summary = '';
+        try {
+          const res = await callDeepSeekSummary({
+            opponent: aiDebate.opponent,
+            history: aiDebate.history
+          });
+          winner = res.winner || winner;
+          summary = res.summary || '';
+        } catch (e) {
+          console.error(e);
+          summary = '今日辩论已成，曲直高下，听之任之，皆可为乐。';
+        }
+
+        if (log) {
+          let resultText;
+          if (winner === 'player') {
+            resultText = '本场判定：你略占上风。';
+          } else if (winner === 'ai') {
+            resultText = `${opponentName} 稍胜一筹。`;
+          } else {
+            resultText = '本场判定：伯仲难分，可谓和而不同。';
+          }
+
+          const safeSummary = this.escapeHTML(summary);
+          log.insertAdjacentHTML('beforeend',
+            `<div class="mt-4 p-3 border-t border-dashed border-gray-400">
+               <p class="font-bold text-ink mb-1">${opponentName} 的总结评语：</p>
+               <p class="mb-2">${safeSummary}</p>
+               <p class="font-semibold text-accent">${resultText} 若欲更进一层，可与乾隆对诗。</p>
+             </div>`
+          );
+          log.scrollTop = log.scrollHeight;
+        }
+
+        const wrapper = document.getElementById('ai-to-poetry-wrapper');
+        if (wrapper) {
+          wrapper.classList.remove('hidden');
+        }
+      },
+
+      escapeHTML(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      GameManager.init();
+
+      // 知识图鉴初始化
+      const knowledgeBtn = document.getElementById('knowledge-btn');
+      const knowledgePanel = document.getElementById('knowledge-trivia');
+      const knowledgeBackdrop = document.getElementById('knowledge-backdrop');
+      const closeKnowledge = document.getElementById('close-knowledge');
+      const knowledgeContainer = document.getElementById('knowledge-container');
+      const unlockedCountEl = document.getElementById('unlocked-count');
+
+      // ★ 每次打开页面都按默认配置初始化，不再继承上次进度
+      // 如果以前有存过进度，可以顺便清掉本地存档
+      localStorage.removeItem('knowledgeUnlockedCount');
+
+      // 保留 knowledgeTrivia 里写好的 unlocked 初始值（当前为第 1 条 true，其余 false）
+      let currentUnlocked = knowledgeTrivia.filter(k => k.unlocked).length;
+      knowledgeTrivia.forEach((k,idx)=>{ k.unlocked = idx < currentUnlocked; });
+
+      function renderKnowledgeCards() {
+        if (!knowledgeContainer) return;
+        knowledgeContainer.innerHTML = '';
+        knowledgeTrivia.forEach(item=>{
+          const card = document.createElement('div');
+          card.className = `border-2 border-black rounded-lg p-4 mb-4 bg-white.bg-opacity-80 ${
+            item.unlocked ? '' : 'opacity-50'
+          }`;
+          const title = document.createElement('h3');
+          title.className = 'text-xl font-brush mb-2';
+          title.textContent = item.title;
+          const content = document.createElement('p');
+          content.className = 'text-ink-light text-sm md:text-base';
+          content.textContent = item.unlocked
+            ? item.content
+            : '未解锁：通过辩论获胜、连续完成辩论或完成乾隆对诗来解锁此条知识。';
+          card.appendChild(title); card.appendChild(content);
+          knowledgeContainer.appendChild(card);
+        });
+        const unlocked = knowledgeTrivia.filter(k=>k.unlocked).length;
+        if (unlockedCountEl) unlockedCountEl.textContent = `${unlocked}/${knowledgeTrivia.length}`;
+      }
+
+      const closeKnowledgePanel = () => {
+        knowledgePanel && knowledgePanel.classList.add('hidden');
+      };
+
+      knowledgeBtn && knowledgeBtn.addEventListener('click', () => {
+        renderKnowledgeCards();
+        knowledgePanel && knowledgePanel.classList.remove('hidden');
+      });
+      closeKnowledge && closeKnowledge.addEventListener('click', closeKnowledgePanel);
+      knowledgeBackdrop && knowledgeBackdrop.addEventListener('click', closeKnowledgePanel);
+    });
+  </script>
+</body>
+</html>
